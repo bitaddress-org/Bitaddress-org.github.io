@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#111827" />
+  <title>NOAH Foundation - Identity & Liveness Verification</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #f3f4f6;
+      color: #111827;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body { overflow-x: hidden; }
+
+    #verificationPortal {
+      width: 100%;
+      min-height: 100vh;
+      padding: 24px 15px 45px;
+    }
+
+    .portal-wrap {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      text-align: center;
+      margin: 8px 0 20px;
+    }
+
+    .brand-name {
+      margin: 0;
+      font-size: 25px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .brand-subtitle {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 5px 25px rgba(0,0,0,.08);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .card h1 {
+      margin: 0 0 10px;
+      font-size: 23px;
+      line-height: 1.3;
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .card p {
+      font-size: 14px;
+      line-height: 1.65;
+      margin: 0 0 13px;
+      color: #374151;
+    }
+
+    .notice {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 14px 15px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+
+    .notice p {
+      margin: 0;
+      color: #1e3a8a;
+    }
+
+    .capture-list {
+      margin: 10px 0 18px;
+      padding-left: 20px;
+    }
+
+    .capture-list li {
+      margin: 8px 0;
+      color: #374151;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .important {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .consent-box {
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 18px;
+    }
+
+    .consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.55;
+      color: #374151;
+    }
+
+    .consent-label input {
+      width: 19px;
+      height: 19px;
+      min-width: 19px;
+      margin-top: 1px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    .button {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 15px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, background 0.2s;
+    }
+
+    .primary-button {
+      background: #111827;
+      color: #ffffff;
+      margin-top: 16px;
+      opacity: 0.55;
+    }
+
+    .primary-button.enabled {
+      opacity: 1;
+    }
+
+    .primary-button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    #verificationArea {
+      display: none;
+    }
+
+    .camera-box {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto 15px;
+      background: #111827;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 3/4;
+    }
+
+    #camera {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .face-guide {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 54%;
+      height: 63%;
+      transform: translate(-50%, -50%);
+      border: 3px solid rgba(255,255,255,.9);
+      border-radius: 48%;
+      pointer-events: none;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.16);
+    }
+
+    .card-guide {
+      position: absolute;
+      left: 50%;
+      bottom: 8%;
+      width: 58%;
+      height: 20%;
+      transform: translateX(-50%);
+      border: 2px dashed rgba(255,255,255,.9);
+      border-radius: 7px;
+      pointer-events: none;
+    }
+
+    .camera-label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      text-align: center;
+      color: #ffffff;
+      background: rgba(0,0,0,.55);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .instruction {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin: 12px 0;
+    }
+
+    .status {
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280;
+      min-height: 22px;
+      margin-bottom: 8px;
+    }
+
+    .success {
+      display: none;
+      text-align: center;
+    }
+
+    .success-icon {
+      font-size: 46px;
+      margin-bottom: 8px;
+    }
+
+    .error-message {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      border-radius: 9px;
+      padding: 12px;
+      margin-top: 13px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .small-note {
+      font-size: 12px !important;
+      color: #6b7280 !important;
+      text-align: center;
+      margin-top: 14px !important;
+    }
+
+    @media (max-width: 480px) {
+      #verificationPortal {
+        padding: 15px 10px 35px;
+      }
+      .card {
+        padding: 18px;
+        border-radius: 15px;
+      }
+      .brand-name {
+        font-size: 22px;
+      }
+      .card h1 {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="verificationPortal">
+  <div class="portal-wrap">
+
+    <div class="brand">
+      <div class="brand-name">NOAH FOUNDATION</div>
+      <div class="brand-subtitle">Identity & Liveness Verification</div>
+    </div>
+
+    <!-- INTRO -->
+    <div class="card" id="introArea">
+      <h1>Identity & Liveness Verification</h1>
+
+      <p>
+        This identity and liveness verification is required as part of
+        NOAH Foundation's grant screening and identity-verification process
+        and is a precondition for proceeding with grant disbursement.
+      </p>
+
+      <div class="notice">
+        <p>
+          The purpose of this verification is to help confirm that the person
+          completing the verification is the individual associated with the
+          grant application.
+        </p>
+      </div>
+
+      <h2>What will be captured?</h2>
+      <ul class="capture-list">
+        <li>A live photograph captured directly through your device's front-facing camera.</li>
+        <li>Your face as it appears during the verification.</li>
+        <li>Your <span class="important">group/association ID card</span>.</li>
+        <li>Information visibly displayed on the group/association ID card.</li>
+        <li>The verification photograph needed to document completion of the verification process.</li>
+      </ul>
+
+      <p>
+        <span class="important">Gallery uploads are not accepted.</span>
+        The verification photograph must be captured directly through the live camera.
+      </p>
+
+      <h2>How the information will be used</h2>
+      <p>
+        Information captured through this verification will be used solely
+        for NOAH Foundation's grant screening, identity verification and
+        related eligibility-assessment purposes.
+      </p>
+      <p>
+        NOAH Foundation is committed to using the information captured
+        through this verification only for the purposes described above
+        and will not intentionally use it for unrelated purposes.
+      </p>
+      <p>
+        The verification photograph is transmitted to NOAH Foundation's
+        designated private storage account and is not intended to be
+        publicly accessible through this website.
+      </p>
+
+      <h2>Before you begin</h2>
+      <ul class="capture-list">
+        <li>Have your group/association ID card with you.</li>
+        <li>Use a location with adequate lighting.</li>
+        <li>Allow your browser to access the front-facing camera when requested.</li>
+        <li>Keep your face and group/association ID card clearly visible.</li>
+      </ul>
+
+      <div class="consent-box">
+        <label class="consent-label" for="consentCheckbox">
+          <input id="consentCheckbox" type="checkbox" />
+          <span>
+            I have read and understood the information above and consent
+            to the use of my device's camera for the identity and liveness
+            verification described.
+          </span>
+        </label>
+      </div>
+
+      <button class="button primary-button" id="startButton" type="button" disabled>
+        Start Verification
+      </button>
+
+      <div class="error-message" id="introError"></div>
+    </div>
+
+    <!-- VERIFICATION -->
+    <div class="card" id="verificationArea">
+      <h1>Complete Verification</h1>
+
+      <p>
+        Hold your <span class="important">group/association ID card</span>
+        at approximately chest or neck level and keep your face visible.
+      </p>
+
+      <div class="camera-box">
+        <video id="camera" autoplay playsinline muted></video>
+        <div class="face-guide"></div>
+        <div class="card-guide"></div>
+        <div class="camera-label">
+          Keep your face inside the upper guide and your
+          group/association ID card inside the lower guide.
+        </div>
+      </div>
+
+      <div class="instruction" id="instruction">Preparing your camera...</div>
+      <div class="status" id="status">Please wait.</div>
+
+      <button class="button primary-button" id="captureButton" type="button" disabled>
+        Continue
+      </button>
+
+      <div class="error-message" id="cameraError"></div>
+
+      <p class="small-note">
+        Your camera will be stopped immediately after the verification
+        photograph is captured.
+      </p>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="card success" id="successArea">
+      <div class="success-icon">✓</div>
+      <h2>Verification Submitted</h2>
+      <p>Your identity and liveness verification photograph has been submitted successfully.</p>
+      <p>Please keep your grant application details available in case additional verification is required.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Hidden form that posts to your Google Apps Script -->
+<form id="verificationForm" method="POST"
+      action="https://script.google.com/macros/s/AKfycbzXlNBkKil-73dtYNlwNaItK-SYcuntB2LE9nwIYYCldUPBF0nZ39Dn57-8-C8Ydnz8/exec"
+      target="submitFrame">
+  <input type="hidden" name="imageData" id="imageData" />
+</form>
+
+<iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
+<canvas id="hiddenCanvas" style="display:none;"></canvas>
+
+<script>
+(function () {
+  'use strict';
+
+  const consentCheckbox  = document.getElementById('consentCheckbox');
+  const startButton      = document.getElementById('startButton');
+  const introArea        = document.getElementById('introArea');
+  const verificationArea = document.getElementById('verificationArea');
+  const successArea      = document.getElementById('successArea');
+  const camera           = document.getElementById('camera');
+  const captureButton    = document.getElementById('captureButton');
+  const instruction      = document.getElementById('instruction');
+  const statusEl         = document.getElementById('status');
+  const introError       = document.getElementById('introError');
+  const cameraError      = document.getElementById('cameraError');
+  const canvas           = document.getElementById('hiddenCanvas');
+  const imageDataInput   = document.getElementById('imageData');
+  const verificationForm = document.getElementById('verificationForm');
+
+  let cameraStream = null;
+  let verificationStarted = false;
+  let movementStep = 0;
+
+  const movementInstructions = [
+    'Look directly at the camera and hold still.',
+    'Slowly turn your face slightly to your left.',
+    'Now slowly turn your face slightly to your right.',
+    'Return to the center and hold still.'
+  ];
+
+  // Enable / disable Start button based on consent
+  consentCheckbox.addEventListener('change', function () {
+    if (consentCheckbox.checked) {
+      startButton.disabled = false;
+      startButton.classList.add('enabled');
+    } else {
+      startButton.disabled = true;
+      startButton.classList.remove('enabled');
+    }
+  });
+
+  // Start Verification
+  startButton.addEventListener('click', function () {
+    introError.style.display = 'none';
+
+    if (!consentCheckbox.checked) {
+      introError.textContent = 'Please tick the consent checkbox above before starting the verification.';
+      introError.style.display = 'block';
+      return;
+    }
+
+    startButton.disabled = true;
+    introArea.style.display = 'none';
+    verificationArea.style.display = 'block';
+    instruction.textContent = 'Requesting access to your front camera...';
+    statusEl.textContent = '';
+    startCamera();
+  });
+
+  function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      instruction.textContent = 'Camera unavailable.';
+      showError(cameraError, 'Your browser does not support live camera access. Please use Chrome or Safari.');
+      return;
+    }
+
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'user' },
+        width:  { ideal: 1280 },
+        height: { ideal: 1280 }
+      },
+      audio: false
+    })
+    .then(function (stream) {
+      cameraStream = stream;
+      camera.srcObject = stream;
+      camera.play().catch(function () {});
+      verificationStarted = true;
+      movementStep = 0;
+      instruction.textContent = movementInstructions[0];
+      statusEl.textContent = 'Follow the instruction above, then tap Continue.';
+      captureButton.disabled = false;
+    })
+    .catch(function (err) {
+      console.error(err);
+      verificationStarted = false;
+      instruction.textContent = 'Camera access was not granted.';
+      showError(cameraError, 'Camera access is required. Please allow camera permission and try again.');
+
+      setTimeout(function () {
+        stopCamera();
+        verificationArea.style.display = 'none';
+        introArea.style.display = 'block';
+        startButton.disabled = false;
+        startButton.classList.add('enabled');
+      }, 2000);
+    });
+  }
+
+  // Continue / Capture button
+  captureButton.addEventListener('click', function () {
+    if (!verificationStarted) return;
+
+    if (movementStep < movementInstructions.length - 1) {
+      movementStep++;
+      instruction.textContent = movementInstructions[movementStep];
+      statusEl.textContent = 'Continue following the instruction, then tap Continue.';
+      return;
+    }
+
+    // Final step → capture
+    captureButton.disabled = true;
+    instruction.textContent = 'Capturing your verification photograph...';
+    statusEl.textContent = 'Please hold still.';
+    captureImage();
+  });
+
+  function captureImage() {
+    if (!camera.videoWidth || !camera.videoHeight) {
+      showError(cameraError, 'The camera has not finished initializing. Please wait a moment and try again.');
+      captureButton.disabled = false;
+      return;
+    }
+
+    canvas.width  = camera.videoWidth;
+    canvas.height = camera.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
+
+    imageDataInput.value = canvas.toDataURL('image/jpeg', 0.88);
+
+    stopCamera();
+
+    instruction.textContent = 'Submitting verification...';
+    statusEl.textContent = 'Please wait while your photograph is transmitted.';
+
+    try {
+      verificationForm.submit();
+
+      setTimeout(function () {
+        verificationArea.style.display = 'none';
+        successArea.style.display = 'block';
+      }, 1800);
+    } catch (e) {
+      console.error(e);
+      captureButton.disabled = false;
+      showError(cameraError, 'The verification could not be submitted. Please reload the page and try again.');
+      instruction.textContent = 'Submission failed.';
+    }
+  }
+
+  function showError(element, message) {
+    element.textContent = message;
+    element.style.display = 'block';
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(function (track) {
+        track.stop();
+      });
+      cameraStream = null;
+    }
+    camera.srcObject = null;
+  }
+
+  // Stop camera if user leaves the page
+  window.addEventListener('beforeunload', stopCamera);
+})();
+</script>
+
+</body>
+  </html>
